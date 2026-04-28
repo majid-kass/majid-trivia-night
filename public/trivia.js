@@ -320,7 +320,42 @@ async function fetchApiQuestions(cat, difficulty) {
   });
 }
 
+// Builds 'Which country has this flag?' questions using REST Countries API.
+// Flag images come straight from flagcdn (CDN baked into the API response).
+let countriesCache = null;
+async function fetchCountries() {
+  if (countriesCache) return countriesCache;
+  const res = await fetch("https://restcountries.com/v3.1/all?fields=name,flags");
+  if (!res.ok) throw new Error(`Countries HTTP ${res.status}`);
+  const data = await res.json();
+  countriesCache = data.filter(c => c?.name?.common && c?.flags?.png);
+  return countriesCache;
+}
+
+async function buildFlagQuestions(count = 10) {
+  const all = await fetchCountries();
+  if (all.length < 4) throw new Error("Not enough countries returned");
+  const shuffled = [...all].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count).map(target => {
+    const wrongs = shuffled.filter(c => c.name.common !== target.name.common)
+                           .sort(() => Math.random() - 0.5)
+                           .slice(0, 3);
+    const opts = [...wrongs.map(c => c.name.common), target.name.common];
+    for (let i = opts.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [opts[i], opts[j]] = [opts[j], opts[i]];
+    }
+    return {
+      q: "Which country has this flag?",
+      image: target.flags.png,
+      options: opts,
+      answer: opts.indexOf(target.name.common)
+    };
+  });
+}
+
 // Fetches API questions for the current pack and merges them into questionPacks.
+// Geography is special-cased to use flag-guessing questions from REST Countries.
 // Categories that fail (network, rate limit) silently keep their hardcoded fallback.
 async function loadApiQuestions(packKey, cats) {
   const difficulty = packKey === "hard" ? "hard" : "easy";
@@ -333,7 +368,9 @@ async function loadApiQuestions(packKey, cats) {
       return;
     }
     try {
-      const qs = await fetchApiQuestions(cat, difficulty);
+      const qs = cat === "geography"
+        ? await buildFlagQuestions(10)
+        : await fetchApiQuestions(cat, difficulty);
       if (qs && qs.length >= 5) {
         apiQuestionCache[cacheKey] = qs;
         pack.questions[cat] = qs;
@@ -831,6 +868,8 @@ function buildBoardForRound(roundNum) {
         q: q.q,
         options: q.options,
         answer: q.answer,
+        audio: q.audio,   // propagate audio for music rounds
+        image: q.image,   // propagate image for flag/Kuwait rounds
         used: false,
         isDD: false
       });

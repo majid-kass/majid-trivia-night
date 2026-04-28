@@ -1,0 +1,252 @@
+<div class="ambient-particles" id="ambient-particles"></div>
+
+<div class="host-banner" id="host-banner">
+  <span class="host-icon">🎙️</span>
+  <div style="flex:1;">
+    <div class="host-label">Host</div>
+    <div class="host-text" id="host-text"></div>
+  </div>
+  <div class="host-wave"><span></span><span></span><span></span><span></span><span></span></div>
+</div>
+
+<button class="audio-enable-banner" id="audio-enable">🔊 Click to enable host & music</button>
+
+<div class="container">
+  <!-- START -->
+  <div id="start-screen" class="screen active">
+    <div class="panel">
+      <div class="fun-logo">
+        <div class="floaters">
+          <span class="floater">🎬</span>
+          <span class="floater">🎮</span>
+          <span class="floater">👻</span>
+          <span class="floater">🦸</span>
+          <span class="floater">🍿</span>
+          <span class="floater">🌍</span>
+        </div>
+        <div class="name-line">Majid<span class="sparkle">✨</span></div>
+        <div class="trivia-line">Trivia</div>
+        <div class="night-line">★ Night ★</div>
+      </div>
+      <p class="subtitle">Add the crew. Pick your characters.</p>
+      <div id="players-list"></div>
+      <button id="add-player" class="add-btn">+ Add Player</button>
+      <button id="to-category" class="primary-btn">Continue →</button>
+    </div>
+  </div>
+
+  <!-- CATEGORY -->
+  <div id="category-screen" class="screen">
+    <div class="panel">
+      <h1>Pick Your Categories</h1>
+      <p class="subtitle">Choose as many as you want — they'll be the columns of your board.</p>
+      <div id="category-pick-grid" class="category-pick-grid"></div>
+      <div class="selected-count" id="selected-count">Pick at least 1 category</div>
+
+      <div class="settings-grid">
+        <div class="setting-group">
+          <div class="setting-label">📚 Question pack</div>
+          <div class="setting-value-row" id="pack-chips">
+            <button class="chip selected" data-pack="standard">🎯 Standard</button>
+            <button class="chip" data-pack="hard">🔥 Hard Mode</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">🎮 Rounds</div>
+          <div class="setting-value-row" id="rounds-chips">
+            <button class="chip" data-rounds="1">1 Round</button>
+            <button class="chip selected" data-rounds="2">2 Rounds</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">⏱ Time per team</div>
+          <div class="setting-value-row" id="timer-chips">
+            <button class="chip" data-secs="30">30s</button>
+            <button class="chip" data-secs="60">1 min</button>
+            <button class="chip" data-secs="90">90s</button>
+            <button class="chip selected" data-secs="120">2 min</button>
+            <button class="chip" data-secs="180">3 min</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <div class="setting-label">🎨 Board theme</div>
+          <div class="setting-value-row" id="theme-chips">
+            <button class="chip selected" data-theme="midnight">Midnight</button>
+            <button class="chip" data-theme="sunset">Sunset</button>
+            <button class="chip" data-theme="arcade">Arcade</button>
+            <button class="chip" data-theme="cinema">Cinema</button>
+            <button class="chip" data-theme="forest">Forest</button>
+            <button class="chip" data-theme="ocean">Ocean</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="volume-grid">
+        <div class="volume-row">
+          <label>🎙️ Host narration</label>
+          <input type="range" id="vol-host" min="0" max="100" value="80" />
+          <span class="vol-value" id="vol-host-val">80%</span>
+        </div>
+        <div class="volume-row">
+          <label>🎵 Waiting music</label>
+          <input type="range" id="vol-music" min="0" max="100" value="35" />
+          <span class="vol-value" id="vol-music-val">35%</span>
+        </div>
+        <div class="volume-row">
+          <label>🔊 Sound effects</label>
+          <input type="range" id="vol-sfx" min="0" max="100" value="60" />
+          <span class="vol-value" id="vol-sfx-val">60%</span>
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <label class="toggle-item">
+          <input type="checkbox" id="opt-sound" checked />
+          🔊 Sound effects
+        </label>
+        <label class="toggle-item">
+          <input type="checkbox" id="opt-buzzers" checked />
+          🔔 Player buzzers
+        </label>
+        <label class="toggle-item">
+          <input type="checkbox" id="opt-dd" checked />
+          ⭐ Daily Double
+        </label>
+        <label class="toggle-item">
+          <input type="checkbox" id="opt-confetti" checked />
+          🎉 Confetti
+        </label>
+        <label class="toggle-item">
+          <input type="checkbox" id="opt-final" checked />
+          🏆 Final Question
+        </label>
+      </div>
+
+      <button id="start-game" class="primary-btn" disabled>Start Game</button>
+      <button id="back-to-players" class="add-btn">← Change Players</button>
+    </div>
+  </div>
+
+  <!-- BOARD -->
+  <div id="board-screen" class="screen">
+    <div class="panel">
+      <div class="board-header">
+        <div class="fun-logo compact" style="flex:1; padding-left:0;">
+          <div class="name-line">Majid<span class="sparkle">✨</span></div>
+          <div class="trivia-line">Trivia Night</div>
+        </div>
+        <span id="round-badge" class="picker-badge">Round 1</span>
+        <button id="end-game-btn" class="add-btn" style="width:auto; margin:0; padding:8px 16px;">End Game</button>
+      </div>
+      <div id="scoreboard" class="scoreboard"></div>
+      <div id="board-grid" class="board-grid"></div>
+    </div>
+  </div>
+
+  <!-- ROUND 2 TRANSITION -->
+  <div id="round2-screen" class="screen">
+    <div class="panel" style="text-align:center;">
+      <div class="round2-splash">
+        <div class="round2-title">Round 2</div>
+        <div class="round2-subtitle">Double Jeopardy</div>
+        <div class="round2-emoji">🔥</div>
+        <p class="subtitle">All point values are <strong>doubled</strong>. New questions, same categories.</p>
+      </div>
+      <div id="round2-scoreboard" class="scoreboard"></div>
+      <button id="start-round2" class="primary-btn">Start Round 2</button>
+    </div>
+  </div>
+
+  <!-- FINAL QUESTION WAGERS -->
+  <div id="final-wager-screen" class="screen">
+    <div class="panel">
+      <h1>🏆 Final Question</h1>
+      <p class="subtitle">Each team enters their secret wager. Hide the screen from each other!</p>
+      <div id="final-cat-preview" class="final-cat-preview"></div>
+      <div id="wager-list"></div>
+      <button id="reveal-final-q" class="primary-btn" disabled>Reveal Question</button>
+    </div>
+  </div>
+
+  <!-- FINAL QUESTION REVEAL -->
+  <div id="final-question-screen" class="screen">
+    <div class="panel">
+      <h1>🏆 Final Question</h1>
+      <div id="final-q-cat" class="final-cat-preview"></div>
+      <div class="timer-bar">
+        <div id="final-timer-display" class="timer-display">1:00</div>
+        <button id="final-pause-btn" class="pause-btn">⏸ Pause</button>
+      </div>
+      <div id="final-q-text" class="q-question" style="margin-top: 12px;"></div>
+      <div id="final-answer-reveal" class="answer-reveal">
+        <span class="label">Answer</span>
+        <span id="final-answer-text"></span>
+      </div>
+      <button id="final-reveal-btn" class="reveal-btn">👁 Show Answer</button>
+      <div class="scoring-section">
+        <div class="scoring-label">Mark each team — they each get the wager added or subtracted.</div>
+        <div id="final-judging" class="final-judging"></div>
+        <button id="final-finish" class="primary-btn" disabled>See Final Scores</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result-screen" class="screen">
+    <div class="panel">
+      <h1>Final Scores</h1>
+      <p class="subtitle" id="result-subtitle"></p>
+      <div id="leaderboard" class="leaderboard"></div>
+      <button id="play-again" class="primary-btn">Play Again — Same Crew</button>
+      <button id="new-crew" class="add-btn">Change Players</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMOJI PICKER MODAL -->
+<div id="emoji-modal" class="modal-backdrop">
+  <div class="modal">
+    <h3>Pick your character</h3>
+    <div id="emoji-sections"></div>
+  </div>
+</div>
+
+<!-- QUESTION MODAL -->
+<div id="question-modal" class="modal-backdrop">
+  <div class="question-modal">
+    <div class="q-meta">
+      <span id="q-cat-label"></span>
+      <span class="q-points" id="q-points-label">100</span>
+    </div>
+
+    <div class="timer-bar">
+      <div id="timer-display" class="timer-display">2:00</div>
+      <button id="pause-btn" class="pause-btn">⏸ Pause</button>
+    </div>
+
+    <div id="active-turn-banner" class="active-turn-banner">
+      <span class="avatar" id="active-avatar">🎬</span>
+      <span><strong id="active-name">Player</strong> <span id="active-status">is up</span></span>
+    </div>
+
+    <div id="q-question" class="q-question"></div>
+
+    <div id="q-media" class="q-media"></div>
+
+    <div id="answer-reveal" class="answer-reveal">
+      <span class="label">Answer</span>
+      <span id="answer-text"></span>
+    </div>
+    <button id="reveal-btn" class="reveal-btn">👁 Show Answer</button>
+
+    <div class="scoring-section">
+      <div class="scoring-label">Who answered? Tap their card, then judge.</div>
+      <div id="player-buttons" class="player-buttons"></div>
+      <div class="judge-row">
+        <button id="judge-correct" class="judge-btn judge-correct" disabled>✓ Correct</button>
+        <button id="judge-wrong" class="judge-btn judge-wrong" disabled>✗ Wrong</button>
+        <button id="judge-skip" class="judge-btn judge-skip">Skip / Close</button>
+      </div>
+    </div>
+  </div>
+</div>

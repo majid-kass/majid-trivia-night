@@ -378,7 +378,8 @@ const STREAK_BONUS_AT = 3;
 const STREAK_BONUS_AMOUNT = 500;
 
 // ============ STATE ============
-let players = [{ name: "Majid", emoji: "🎬", score: 0, streak: 0, finalWager: 0, finalSet: false, finalCorrect: null }];
+// Players start empty so the host adds their own crew — no pre-filled default.
+let players = [];
 let currentEmojiTarget = null;
 let selectedCategories = [];
 let board = []; // [{cat, points, q, options, answer, used, isDD, picker}]
@@ -505,14 +506,6 @@ function stopBgMusic() {
   }
   bgMusicNodes = null;
   bgMusicPlaying = false;
-}
-
-function setMusicVolume(v) {
-  settings.volMusic = v;
-  if (bgMusicNodes && bgMusicNodes.master) {
-    const ctx = getAudioCtx();
-    bgMusicNodes.master.gain.linearRampToValueAtTime(v, ctx.currentTime + 0.2);
-  }
 }
 
 function spawnAmbientParticles() {
@@ -797,6 +790,11 @@ function applyTheme() {
 }
 // Toggles
 document.getElementById("opt-sound").addEventListener("change", e => settings.sound = e.target.checked);
+document.getElementById("opt-host-voice").addEventListener("change", e => settings.hostVoice = e.target.checked);
+document.getElementById("opt-music").addEventListener("change", e => {
+  settings.music = e.target.checked;
+  if (!settings.music) stopBgMusic();
+});
 document.getElementById("opt-buzzers").addEventListener("change", e => settings.buzzers = e.target.checked);
 document.getElementById("opt-dd").addEventListener("change", e => settings.dailyDouble = e.target.checked);
 document.getElementById("opt-confetti").addEventListener("change", e => settings.confetti = e.target.checked);
@@ -1009,6 +1007,7 @@ function openQuestion(tile) {
 
   document.getElementById("judge-correct").disabled = true;
   document.getElementById("judge-wrong").disabled = true;
+  document.getElementById("judge-nobody").disabled = false;
 
   document.getElementById("question-modal").classList.add("active");
   stopBgMusic();
@@ -1194,6 +1193,22 @@ document.getElementById("judge-wrong").addEventListener("click", () => {
   renderPlayerButtons();
   updateActiveTurnBanner(true);
   startTimer();
+});
+
+// "Nobody Knew" — no team got it. Reveals the answer to the room, awards no points,
+// resets nothing, then closes the tile after a beat so players can read the answer.
+document.getElementById("judge-nobody").addEventListener("click", () => {
+  if (!activeTile) return;
+  const ans = document.getElementById("answer-reveal");
+  const revealBtn = document.getElementById("reveal-btn");
+  ans.classList.add("shown");
+  revealBtn.textContent = "🙈 Hide Answer";
+  revealBtn.dataset.shown = "true";
+  document.getElementById("judge-correct").disabled = true;
+  document.getElementById("judge-wrong").disabled = true;
+  document.getElementById("judge-nobody").disabled = true;
+  stopTimer();
+  setTimeout(() => finishTile(), 2500);
 });
 
 document.getElementById("judge-skip").addEventListener("click", () => {
@@ -1470,22 +1485,7 @@ document.getElementById("play-again").addEventListener("click", () => {
 });
 document.getElementById("new-crew").addEventListener("click", () => showScreen("start"));
 
-// ============ VOLUME SLIDERS + AUDIO UNLOCK ============
-function bindVolumeSlider(id, key, displayId) {
-  const el = document.getElementById(id);
-  const display = document.getElementById(displayId);
-  if (!el) return;
-  el.addEventListener("input", e => {
-    const v = parseInt(e.target.value, 10);
-    display.textContent = v + "%";
-    if (key === "volMusic") setMusicVolume(v / 100);
-    else settings[key] = v / 100;
-  });
-}
-bindVolumeSlider("vol-host", "volHost", "vol-host-val");
-bindVolumeSlider("vol-music", "volMusic", "vol-music-val");
-bindVolumeSlider("vol-sfx", "volSfx", "vol-sfx-val");
-
+// ============ AUDIO UNLOCK ============
 // Audio autoplay policies require a user gesture before audio can play.
 // Show an unlock button until the user clicks anywhere.
 function unlockAudio() {

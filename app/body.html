@@ -81,28 +81,18 @@
         </div>
       </div>
 
-      <div class="volume-grid">
-        <div class="volume-row">
-          <label>🎙️ Host narration</label>
-          <input type="range" id="vol-host" min="0" max="100" value="80" />
-          <span class="vol-value" id="vol-host-val">80%</span>
-        </div>
-        <div class="volume-row">
-          <label>🎵 Waiting music</label>
-          <input type="range" id="vol-music" min="0" max="100" value="35" />
-          <span class="vol-value" id="vol-music-val">35%</span>
-        </div>
-        <div class="volume-row">
-          <label>🔊 Sound effects</label>
-          <input type="range" id="vol-sfx" min="0" max="100" value="60" />
-          <span class="vol-value" id="vol-sfx-val">60%</span>
-        </div>
-      </div>
-
       <div class="toggle-row">
         <label class="toggle-item">
           <input type="checkbox" id="opt-sound" checked />
           🔊 Sound effects
+        </label>
+        <label class="toggle-item">
+          <input type="checkbox" id="opt-host-voice" checked />
+          🎙️ Host narration
+        </label>
+        <label class="toggle-item">
+          <input type="checkbox" id="opt-music" checked />
+          🎵 Waiting music
         </label>
         <label class="toggle-item">
           <input type="checkbox" id="opt-buzzers" checked />
@@ -245,6 +235,7 @@
       <div class="judge-row">
         <button id="judge-correct" class="judge-btn judge-correct" disabled>✓ Correct</button>
         <button id="judge-wrong" class="judge-btn judge-wrong" disabled>✗ Wrong</button>
+        <button id="judge-nobody" class="judge-btn judge-skip">🤷 Nobody Knew</button>
         <button id="judge-skip" class="judge-btn judge-skip">Skip / Close</button>
       </div>
     </div>

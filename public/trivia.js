@@ -283,6 +283,67 @@ const questionPacks = {
   }
 };
 
+// ============ OPEN TRIVIA DB API ============
+// Maps our category keys -> Open Trivia DB category IDs.
+// Audio (music2000s/tvthemes/moviesongs) and local (kuwait) categories stay hardcoded.
+const apiCategoryMap = {
+  marvel: 11, romcom: 11, horror: 11, classics: 11, // Entertainment: Film
+  videogames: 15,                                    // Entertainment: Video Games
+  geography: 22,                                     // Geography
+  animation: 32,                                     // Entertainment: Cartoons
+  sports: 21                                         // Sports
+};
+const apiQuestionCache = {}; // key: `${pack}:${cat}` -> question array
+
+function decodeHtml(s) {
+  const ta = document.createElement("textarea");
+  ta.innerHTML = s;
+  return ta.value;
+}
+
+async function fetchApiQuestions(cat, difficulty) {
+  const id = apiCategoryMap[cat];
+  if (!id) return null;
+  const url = `https://opentdb.com/api.php?amount=10&category=${id}&difficulty=${difficulty}&type=multiple`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  if (data.response_code !== 0 || !data.results?.length) throw new Error(`API code ${data.response_code}`);
+  return data.results.map(item => {
+    const correct = decodeHtml(item.correct_answer);
+    const opts = [...item.incorrect_answers.map(decodeHtml), correct];
+    for (let i = opts.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [opts[i], opts[j]] = [opts[j], opts[i]];
+    }
+    return { q: decodeHtml(item.question), options: opts, answer: opts.indexOf(correct) };
+  });
+}
+
+// Fetches API questions for the current pack and merges them into questionPacks.
+// Categories that fail (network, rate limit) silently keep their hardcoded fallback.
+async function loadApiQuestions(packKey, cats) {
+  const difficulty = packKey === "hard" ? "hard" : "easy";
+  const pack = questionPacks[packKey];
+  const targets = cats.filter(c => apiCategoryMap[c]);
+  await Promise.allSettled(targets.map(async cat => {
+    const cacheKey = `${packKey}:${cat}`;
+    if (apiQuestionCache[cacheKey]) {
+      pack.questions[cat] = apiQuestionCache[cacheKey];
+      return;
+    }
+    try {
+      const qs = await fetchApiQuestions(cat, difficulty);
+      if (qs && qs.length >= 5) {
+        apiQuestionCache[cacheKey] = qs;
+        pack.questions[cat] = qs;
+      }
+    } catch (e) {
+      console.warn(`[trivia] API fetch failed for ${cat}, using hardcoded fallback:`, e.message);
+    }
+  }));
+}
+
 // ============ FINAL QUESTION POOL ============
 const finalQuestionPool = [
   { catLabel: "🎬 Cinema", q: "Which film holds the record for most Academy Award wins (tied)?", options: ["Titanic", "Ben-Hur", "Lord of the Rings: Return of the King", "All three are tied at 11"], answer: 3 },
@@ -787,7 +848,20 @@ function buildBoardForRound(roundNum) {
   }
 }
 
-function startGame() {
+async function startGame() {
+  // Pull fresh questions from Open Trivia DB for the selected categories.
+  // Failures fall back silently to hardcoded questions, so the game always starts.
+  const startBtn = document.getElementById("start-game");
+  const origText = startBtn.textContent;
+  startBtn.textContent = "Loading questions…";
+  startBtn.disabled = true;
+  try {
+    await loadApiQuestions(settings.pack, selectedCategories);
+  } finally {
+    startBtn.textContent = origText;
+    startBtn.disabled = false;
+  }
+
   currentRound = 1;
   usedQuestionsByCat = {};
   players.forEach(p => { p.score = 0; p.streak = 0; p.finalWager = 0; p.finalSet = false; p.finalCorrect = null; });
